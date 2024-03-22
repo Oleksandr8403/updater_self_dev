@@ -12,10 +12,13 @@ from game_updater_class import GameUpdater
 from start_and_host import add_entry_to_hosts, add_entry_to_hosts_en
 from config_example import update_server_url, zip_base_url, image_url, version_str
 
+"""Graphical user interface for the game updater. Allows users to check for updates, apply them, and launch the game 
+with or without modifications to the hosts file for language options."""
 
-logger_enabled = False
 
-# Setting up the logger
+logger_enabled = False  # Flag to enable or disable logging
+
+# Setting up the logger with specified format and file
 if logger_enabled:
     logging.basicConfig(level=logging.DEBUG, filename='updater_tech.log', filemode='a',
                         format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
@@ -28,6 +31,7 @@ if logger_enabled:
 
 is_updating = False  # Global flag
 
+# Determine the directory of the game based on whether the application is frozen (compiled) or not
 if getattr(sys, 'frozen', False):
     # The application is frozen
     game_dir = os.path.dirname(sys.executable)
@@ -42,6 +46,8 @@ updater = GameUpdater(game_dir, update_server_url, zip_base_url)
 
 if logger_enabled:
     logger.info("Starting updater...")
+
+# Check for administrative rights and request them if not present
 access = updater.is_admin()
 if access:
     if logger_enabled:
@@ -55,7 +61,9 @@ else:
     sys.exit()
 
 
+# Main function to check for and apply updates
 def main_function():
+    # Check for updates and apply them if any are found.
     global is_updating
     updates_required = updater.check_for_updates()
     if updates_required:
@@ -71,6 +79,7 @@ def main_function():
 
 
 def run_updater():
+    # Wrapper function to start the update process in a new thread.
     global is_updating
     update_progress_bar_initial()
     if is_updating:
@@ -85,6 +94,7 @@ def run_updater():
 
 
 def download_and_resize_image(url, new_width, new_height):
+    # Download an image from the URL and resize it.
     response = requests.get(url)
     response.raise_for_status()
     img_orig = Image.open(BytesIO(response.content))
@@ -92,6 +102,7 @@ def download_and_resize_image(url, new_width, new_height):
     return ImageTk.PhotoImage(img_resized)
 
 
+# Setup the GUI window using customtkinter and tkinter...
 # Creating the main window
 app = ctk.CTk()
 app.title(version_str)

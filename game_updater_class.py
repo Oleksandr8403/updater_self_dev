@@ -10,6 +10,8 @@ import traceback
 
 
 class GameUpdater:
+    """Core class for managing game updates. Checks for updates by comparing file hashes, downloads necessary
+    updates, and applies them to the game directory."""
     def __init__(self, game_dir, server_url_json, server_url_zip_files):
         """ Game updater initialization """
         self.game_dir = Path(game_dir)
@@ -19,6 +21,7 @@ class GameUpdater:
         self.logger = self.setup_logger()
 
     def is_admin(self):
+        """Check if the updater is running with administrative privileges."""
         try:
             is_admin_right = ctypes.windll.shell32.IsUserAnAdmin()
             self.logger.info(f"is_admin: {is_admin_right}")
@@ -44,7 +47,7 @@ class GameUpdater:
         return response.json()
 
     def check_for_updates(self):
-        """ Checking for updates """
+        """Compare local file hashes against server hashes to identify updates."""
         server_hashes = self.fetch_server_hashes()
         local_hashes = self.get_local_file_hashes()
 
@@ -56,7 +59,7 @@ class GameUpdater:
         return updates_required_2
 
     def download_and_update_files(self, updates_required, update_progress_callback):
-        """ Downloading and installing updates """
+        """Download and apply updates for files with mismatching hashes."""
         temp_dir = os.path.join(self.game_dir, 'temp')  # Temp directory
         total_files = len(updates_required)
         completed_files = 0
@@ -108,7 +111,7 @@ class GameUpdater:
                 shutil.rmtree(temp_dir)
 
     def verify_download(self, file_path, expected_hash):
-        """ Verifying the integrity of the downloaded file """
+        """Verify the downloaded file's integrity by comparing its hash."""
         hash_sha256 = hashlib.sha256()
 
         try:
@@ -123,7 +126,7 @@ class GameUpdater:
             return False
 
     def get_local_file_hashes(self):
-        """ Creating a dictionary of local file hashes """
+        """Generate hashes for all files in the local game directory."""
         local_hashes = {}
         for root, dirs, files in os.walk(self.game_dir):
             for file in files:

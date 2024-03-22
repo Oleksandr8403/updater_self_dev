@@ -6,10 +6,16 @@ import time
 from typing import Dict
 from config_example import source_directory, zip_directory, json_file_path
 
+"""Utility script for hashing game files and archiving them into zip files. Generates a JSON manifest of file hashes 
+for integrity verification."""
+
 
 def create_file_hash_and_archive(initial_directory: str, end_zip_directory: str) -> Dict[str, str]:
+    # Tracks execution time for the function
     start_time = time.time()
     hashes = {}
+
+    # Walk through the directory structure of the source directory
     for root, dirs, files in os.walk(initial_directory):
         for file in files:
             file_path = os.path.join(root, file)
@@ -31,6 +37,7 @@ def create_file_hash_and_archive(initial_directory: str, end_zip_directory: str)
             with zipfile.ZipFile(zip_file_path, 'w', zipfile.ZIP_DEFLATED, compresslevel=5) as zipf:
                 zipf.write(file_path, relative_file_path)
 
+    # Log the execution time
     end_time = time.time()
     execution_time = end_time - start_time
     print(f"Execution time: {execution_time:.2f} seconds")
@@ -38,8 +45,9 @@ def create_file_hash_and_archive(initial_directory: str, end_zip_directory: str)
     return hashes
 
 
+# Create file hashes and archive them
 file_hashes = create_file_hash_and_archive(source_directory, zip_directory)
 
-# Saving hashes to a JSON file
+# Save the file hashes to a JSON file for later reference
 with open(json_file_path, 'w') as json_file:
     json.dump(file_hashes, json_file, indent=4)
